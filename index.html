@@ -1,304 +1,109 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Privacy Policy – Beary Berry Jam</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scratchard</title>
+<meta name="description" content="Scratchard: a game in development. First artwork, published 17 October 2026. © 2026 Dmitrijs Medvedevs.">
+<meta property="og:title" content="Scratchard">
+<meta property="og:description" content="A game in development. First artwork.">
+<meta property="og:image" content="https://bbjg-app.github.io/scratchard/img/cat-in-the-berry-garden.jpg">
 <style>
   :root {
-    --ink: #2b2420;
-    --ink-soft: #5a5048;
-    --paper: #fdfaf5;
-    --accent: #b5651d;
-    --accent-soft: #e8d5c0;
-    --rule: #e4dccf;
+    --ground: #f3efe6;
+    --ink: #1f2a24;
+    --ink-soft: #55625a;
+    --accent: #2f7a4f;
+    --rule: #d9d2c2;
+    --mat: #ffffff;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ground: #141a17;
+      --ink: #eef2ea;
+      --ink-soft: #a5b2a8;
+      --accent: #7fd1a0;
+      --rule: #2b3630;
+    }
   }
   * { box-sizing: border-box; }
   body {
     margin: 0;
-    background: var(--paper);
+    background: var(--ground);
     color: var(--ink);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    line-height: 1.6;
+    font: 17px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   }
-  .wrap {
-    max-width: 760px;
-    margin: 0 auto;
-    padding: 48px 20px 80px;
-  }
-  header {
-    border-bottom: 2px solid var(--accent-soft);
-    padding-bottom: 24px;
-    margin-bottom: 36px;
-  }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 48px 16px 64px; }
+  header { margin-bottom: 36px; }
   h1 {
-    font-size: 1.9rem;
-    margin: 0 0 8px;
-    color: var(--ink);
+    font: 700 clamp(2.4rem, 8vw, 4rem)/1 Georgia, "Times New Roman", serif;
+    letter-spacing: -0.01em;
+    margin: 0 0 12px;
   }
-  .meta {
-    color: var(--ink-soft);
-    font-size: 0.95rem;
+  .lead { color: var(--ink-soft); font-size: 1.1rem; margin: 0; max-width: 34em; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
   }
-  h2 {
-    font-size: 1.25rem;
-    margin-top: 2.4em;
-    margin-bottom: 0.6em;
-    color: var(--ink);
-    border-left: 4px solid var(--accent);
-    padding-left: 12px;
+  figure { margin: 0; }
+  .mat {
+    background: var(--mat);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
-  h3 {
-    font-size: 1.05rem;
-    margin-top: 1.6em;
-    margin-bottom: 0.4em;
-    color: var(--ink);
-  }
-  p, li { color: var(--ink); }
-  ul { padding-left: 1.3em; }
-  li { margin-bottom: 0.5em; }
-  a { color: var(--accent); }
-  .lead {
-    font-size: 1.05rem;
-    color: var(--ink-soft);
-  }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 1em 0 1.6em;
-    font-size: 0.95rem;
-  }
-  th, td {
-    text-align: left;
-    padding: 10px 12px;
-    border-bottom: 1px solid var(--rule);
-    vertical-align: top;
-  }
-  th {
-    background: var(--accent-soft);
-    font-weight: 600;
-  }
-  .note {
-    background: var(--accent-soft);
-    border-radius: 8px;
-    padding: 14px 16px;
-    font-size: 0.95rem;
-    margin: 1.2em 0;
-  }
-  .legal-box {
-    background: var(--accent-soft);
-    padding: 20px 22px;
-    border-radius: 10px;
-    margin-top: 1.4em;
-  }
-  .legal-box p { margin: 0.4em 0; }
+  .mat img { display: block; max-width: 100%; height: auto; }
+  .feature { grid-column: 1 / -1; }
+  .feature .mat img { max-height: 760px; width: auto; }
+  figcaption { margin-top: 8px; font-size: 0.92rem; color: var(--ink-soft); }
   footer {
-    margin-top: 56px;
+    margin-top: 48px;
     padding-top: 20px;
     border-top: 1px solid var(--rule);
     color: var(--ink-soft);
-    font-size: 0.9rem;
+    font-size: 0.93rem;
   }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --ink: #f0e9e0;
-      --ink-soft: #bfb3a5;
-      --paper: #1c1815;
-      --accent: #e0a25a;
-      --accent-soft: #3a2f22;
-      --rule: #3a332b;
-    }
+  footer p { margin: 0 0 6px; }
+  a { color: var(--accent); }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  @media (max-width: 640px) {
+    .grid { grid-template-columns: 1fr; }
+    .wrap { padding-top: 32px; }
   }
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <h1>Privacy Policy – Beary Berry Jam</h1>
-    <div class="meta">Last updated: 10 October 2026</div>
+    <h1>Scratchard</h1>
+    <p class="lead">A game in development. Here is the first artwork.</p>
   </header>
 
-  <p class="lead">
-    This Privacy Policy explains what data Beary Berry Jam ("the App", "we", "us")
-    collects, why, and what choices you have. Beary Berry Jam is a mobile match-3
-    puzzle game developed by an independent developer. We built this policy to
-    reflect exactly what the App does – not a generic template.
-  </p>
+  <main class="grid">
+    <figure class="feature">
+      <div class="mat"><img src="img/cat-in-the-berry-garden.jpg" width="1024" height="1024" alt="A ginger tabby cat in cowboy boots stands upright in a glowing berry garden, holding a basket of berries."></div>
+      <figcaption>Berry garden. &copy; 2026 Dmitrijs Medvedevs</figcaption>
+    </figure>
 
-  <h2>Who we are</h2>
-  <p>
-    Beary Berry Jam is developed by an independent developer.
-    Contact for any privacy question or request: <a href="mailto:help@bbjg.app">help@bbjg.app</a>.
-    Full legal details are in the Legal Notice (Impressum) section at the bottom of this page.
-  </p>
+    <figure>
+      <div class="mat"><img src="img/witch-lesson.jpg" width="1008" height="1060" loading="lazy" alt="A young witch and a little girl in matching hats stir a green potion together while a ginger cat watches."></div>
+      <figcaption>Potion lesson. &copy; 2026 Dmitrijs Medvedevs</figcaption>
+    </figure>
 
-  <h2>Age restriction</h2>
-  <p>
-    Beary Berry Jam is intended for players aged 16 and over. We do not knowingly
-    collect personal data from anyone under 16. If you believe someone under 16 has
-    used the App and provided us with personal data, please contact us at
-    <a href="mailto:help@bbjg.app">help@bbjg.app</a> and we will address it.
-  </p>
-
-  <h2>What data the App collects</h2>
-
-  <h3>Data stored only on your device</h3>
-  <p>
-    Your game progress, star ratings, unlocked levels, purchased pet skins, and sound
-    settings are saved locally on your device only. This data is not linked to your
-    identity, is not sent to us or to any server, and is not associated with an
-    account – the App does not have accounts, sign-in, or a cloud save feature.
-    Uninstalling the App removes this data.
-  </p>
-
-  <h3>Advertising data</h3>
-  <p>
-    The App may show optional "watch an ad for a reward" videos, delivered through a
-    third-party ad mediation service (ironSource/LevelPlay), which in turn may work
-    with several advertising networks to select and display ads. To do this, these
-    services may access your device's advertising identifier (IDFA on iOS, or
-    Google Advertising ID on Android) and technical information such as device type,
-    operating system, and general (non-precise) region, used for ad delivery,
-    frequency capping, and fraud prevention.
-  </p>
-  <p>
-    These services may also collect information about how ads are shown and
-    interacted with (for example, whether a video ad was viewed), ad performance
-    data, and technical diagnostic data (for example, about ad loading errors or
-    ad quality checks), which they use to operate, measure and secure advertising.
-  </p>
-  <p>
-    Before any ad-related data is used, the App shows a consent screen the first time
-    you play, asking whether you agree to personalized ads based on your advertising
-    identifier. If you decline, the App works exactly the same – you may simply see
-    less relevant ads. You are only asked once; you can change your answer later in
-    your device's privacy settings, or write to us with any questions at
-    <a href="mailto:help@bbjg.app">help@bbjg.app</a>.
-  </p>
-  <p>
-    On iOS, the App will additionally request your permission through Apple's App
-    Tracking Transparency prompt before any such identifier is used for tracking.
-  </p>
-  <p>
-    On Android, you can reset or limit your advertising identifier, or opt out of
-    personalized ads, from your device's Google settings at any time.
-  </p>
-
-  <h3>Install attribution</h3>
-  <p>
-    The App uses AppsFlyer (AppsFlyer Ltd.) to measure which promotion led to an
-    installation, for example when you open the App through a promotional link or
-    QR code. AppsFlyer may receive your device's advertising identifier (IDFA on iOS,
-    or Google Advertising ID on Android), IP address, device type, operating system
-    version, and information about app installs and in-app events. This is done only
-    after you answer the consent screen shown on your first launch. If you decline
-    personalized ads, AppsFlyer runs in anonymous mode and does not receive your
-    advertising identifier. On iOS, AppsFlyer additionally waits for your answer to
-    Apple's App Tracking Transparency prompt. You can change your choice at any time
-    in your device's privacy settings (on iOS: Settings &gt; Privacy &amp; Security &gt;
-    Tracking; on Android: Settings &gt; Google &gt; Ads). For questions, write to
-    <a href="mailto:help@bbjg.app">help@bbjg.app</a>.
-  </p>
-
-  <h3>Purchases</h3>
-  <p>
-    If you choose to buy in-game currency or a pet skin, the purchase is processed
-    entirely by Apple (App Store) or Google (Google Play). We do not see, collect, or
-    store your payment card number or billing details – the store provider handles
-    this in line with its own privacy policy.
-  </p>
-
-  <h3>What we do not collect</h3>
-  <ul>
-    <li>No account registration, email, or password.</li>
-    <li>No precise location data.</li>
-    <li>No access to your contacts, photos, or microphone.</li>
-    <li>We do not use our own analytics or crash-reporting service in the App. The only measurement service we use ourselves is the install attribution described above. The advertising services described above may collect their own technical and diagnostic data, as explained in "Advertising data".</li>
-  </ul>
-  <p class="note">
-    If this changes in a future update (for example, if we add analytics or a
-    cloud-save feature), we will update this policy before that update is released,
-    and will highlight the change here.
-  </p>
-
-  <h2>Third parties we work with</h2>
-  <table>
-    <tr><th>Purpose</th><th>Provider</th><th>Data involved</th></tr>
-    <tr>
-      <td>Rewarded video ads</td>
-      <td>ironSource / LevelPlay ad mediation and its partner ad networks</td>
-      <td>Advertising identifier, device/OS info, approximate region, ad interaction and performance data, diagnostic data</td>
-    </tr>
-    <tr>
-      <td>Install attribution</td>
-      <td>AppsFlyer Ltd.</td>
-      <td>Advertising identifier (only with your consent), IP address, device/OS info, install and in-app events</td>
-    </tr>
-    <tr>
-      <td>Purchases</td>
-      <td>Apple App Store / Google Play</td>
-      <td>Payment handled entirely by the store; we do not receive card details</td>
-    </tr>
-  </table>
-
-  <h2>Your rights</h2>
-  <p>
-    If you are in the European Economic Area, the United Kingdom, or another region
-    with similar data protection laws, you have the right to:
-  </p>
-  <ul>
-    <li>Ask what data is processed about you and why;</li>
-    <li>Ask us to correct or delete data we hold about you;</li>
-    <li>Withdraw consent for advertising tracking at any time (see "Advertising data" above);</li>
-    <li>Object to processing, or ask for it to be restricted;</li>
-    <li>Lodge a complaint with your local data protection authority.</li>
-  </ul>
-  <p>
-    Because the App does not use accounts, most of your data (game progress, settings)
-    exists only on your own device – deleting it is as simple as uninstalling the App.
-    For anything related to advertising, attribution or purchase data, contact us at
-    <a href="mailto:help@bbjg.app">help@bbjg.app</a> and we will help, or direct you to
-    the relevant third party (Apple, Google, AppsFlyer, or our ad mediation provider)
-    where the data is held.
-  </p>
-
-  <h2>International data transfers</h2>
-  <p>
-    Our advertising, attribution and app-store partners may process data outside of
-    your country, including outside the European Economic Area. Where this happens, it
-    is governed by those partners' own privacy policies and applicable legal safeguards
-    (such as Standard Contractual Clauses).
-  </p>
-
-  <h2>Changes to this policy</h2>
-  <p>
-    We may update this Privacy Policy as the App evolves – for example, when we
-    re-enable advertising, add in-app purchases, or introduce new features that
-    involve data. The "Last updated" date at the top of this page will always reflect
-    the latest version. Continuing to use the App after a change means you accept the
-    updated policy.
-  </p>
-
-  <h2>Contact us</h2>
-  <p>
-    Questions, requests, or concerns about this policy or your data? Write to us at
-    <a href="mailto:help@bbjg.app">help@bbjg.app</a>.
-  </p>
-
-  <h2>Legal Notice (Impressum)</h2>
-  <p>
-    Required under German law (Digitale-Dienste-Gesetz, DDG) for the operator of
-    this App and website:
-  </p>
-  <div class="legal-box">
-    <p><strong>Name:</strong> Dmitrijs Medvedevs</p>
-    <p><strong>Address:</strong> Brandhorststraße 27, 32469 Petershagen, Germany</p>
-    <p><strong>Email:</strong> <a href="mailto:help@bbjg.app">help@bbjg.app</a></p>
-    <p><strong>VAT ID (USt-IdNr):</strong> DE313187100</p>
-  </div>
+    <figure>
+      <div class="mat"><img src="img/cat-witch-cauldron.png" width="827" height="981" loading="lazy" alt="A ginger cat in a witch hat raises both paws behind a black runic cauldron full of green bubbling potion."></div>
+      <figcaption>Cauldron. &copy; 2026 Dmitrijs Medvedevs</figcaption>
+    </figure>
+  </main>
 
   <footer>
-    Beary Berry Jam – Privacy Policy &amp; Legal Notice · <a href="mailto:help@bbjg.app">help@bbjg.app</a>
+    <p>&copy; 2026 Dmitrijs Medvedevs. All rights reserved. Scratchard and all artwork on this page may not be copied, reproduced or reused without written permission.</p>
+    <p>First published: 17 October 2026.</p>
+    <p>Contact: <a href="mailto:help@bbjg.app">help@bbjg.app</a> &middot; <a href="https://bbjg-app.github.io/">Privacy Policy &amp; Legal Notice</a></p>
   </footer>
 </div>
 </body>
