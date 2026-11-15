@@ -146,6 +146,15 @@ body.typing main{padding-bottom:20px}
 .card.ex .tag{position:absolute;top:-9px;right:10px;background:var(--yel,#f2c230);color:#1d2b44;font-size:11px;font-weight:700;border-radius:8px;padding:1px 8px}
 .card.ex .hint,.card.newc .hint{font-size:12px;color:#2f6fb3;margin-top:3px}
 .card.ex .qty{opacity:.55;pointer-events:none}
+.card.inl{display:flex;gap:10px;align-items:flex-start;border:2px solid #2f6fb3;background:#fff;margin-top:12px;padding:10px}
+.card.inl .ipic{width:104px;flex:none;text-align:center}.card.inl .ipic>img{width:96px;height:96px;object-fit:contain;border-radius:10px;background:#f3f5f8}
+.card.inl .ib{display:flex;gap:6px;justify-content:center;margin-top:4px}.card.inl .ib label{width:46px;height:46px;border:1.5px solid #d3dbe6;border-radius:10px;background:#f7f9fc;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.card.inl .ib img{width:38px;height:38px;object-fit:contain}.card.inl small{display:block;font-size:10.5px;color:#5a6678;margin-top:3px}
+.card.inl .ifl{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+.card.inl input{width:100%;font-size:16px;padding:9px 10px;border:1.5px solid #c8d0dc;border-radius:9px;box-sizing:border-box}
+.card.inl .irow{display:flex;gap:6px}.card.inl .inl-q{width:80px;flex:none}
+.card.inl .inl-x{flex:none;width:44px;border:0;border-radius:9px;background:#e8edf3;font-size:18px}
+.card.inl .inl-ok{flex:1;border:0;border-radius:9px;background:#1f8a4c;color:#fff;font-weight:700;font-size:15px}
 .card.newc{border:2px dashed #2f6fb3;background:#f3f8ff;cursor:pointer}
 .card.newc .pic{position:relative}.card.newc .num,.card.newc .spec{color:#8a94a6}
 .card.newc .plus{font-size:30px;color:#2f6fb3;font-weight:300;padding:0 10px}
@@ -723,13 +732,15 @@ let sections=[];
 const OWN='Eigene Positionen';
 function rebuild(){
   const list=BASE.map(x=>Object.assign({},x));
+  const own=[],og=[];
   for(const c of S.custom){
     const it={num:c.num,sec:c.sec||OWN,grp:(c.sec&&c.sec!==OWN)?'Ergänzt':OWN,spec:c.spec||'',art:c.art||'',img:c.img?'c:'+c.num:null,custom:true};
     let at=-1;
     if(it.sec!==OWN&&c.grp){for(let i=0;i<list.length;i++)if(list[i].sec===it.sec&&list[i].grp===c.grp)at=i;if(at>=0)it.grp=c.grp}
     if(at<0&&it.sec!==OWN)for(let i=0;i<list.length;i++)if(list[i].sec===it.sec)at=i;
-    if(at<0){it.sec=OWN;it.grp=OWN;list.push(it)}else list.splice(at+1,0,it);
+    if(at<0){it.sec=OWN;it.grp=(c.sec===OWN||!c.sec)&&c.grp?c.grp:OWN;if(!og.includes(it.grp))og.push(it.grp);own.push(it)}else list.splice(at+1,0,it);
   }
+  og.sort((a,b)=>a===OWN?1:b===OWN?-1:0);og.forEach(g=>own.filter(x=>x.grp===g).forEach(x=>list.push(x)));
   list.forEach((x,i)=>{x.pos=i+1;x.img0=x.img;if(OVR[x.num])x.img='o:'+x.num});ITEMS=list;
   sections=[];ITEMS.forEach(it=>{if(!sections.includes(it.sec))sections.push(it.sec)});
   $('jump').innerHTML='<option value="">Gruppe …</option>'+sections.map((s,i)=>`<option value="s${i}">${esc(s)}</option>`).join('');
@@ -766,7 +777,7 @@ function render(){
     if(it.grp!==grp){grp=it.grp;if(grp!==sec)h+=`<h3 class="grp">${esc(grp)}</h3>`}
     h+=card(it);
   });
-  if(!BASE.length){$('list').innerHTML=starterTop()+exLeft().map(exCard).join('')+(n?h:'')+newCard()+'<div class="crline">Inventur-Formular · © 2026 BBJg · Dmitrijs Medvedevs</div>';stats();return}
+  if(!BASE.length){$('list').innerHTML=starterTop()+exLeft().map(x=>INL===x.id?inlCard(x):exCard(x)).join('')+(n?h:'')+(INL==='new'?inlCard(null):newCard())+'<div class="crline">Inventur-Formular · © 2026 BBJg · Dmitrijs Medvedevs</div>';stats();return}
   $('list').innerHTML=(n?h:`<div class="empty">${filter==='done'?'Noch nichts gezählt.':'Nichts gefunden.'}</div>`)+`<div class="addwrap"><button class="addbtn" id="addQ" data-q="${esc(/^\d+$/.test(query)?query:'')}">＋ Neue Position hinzufügen</button></div><div class="crline">Inventur-Formular · © 2026 BBJg · Dmitrijs Medvedevs</div>`;
   stats();
 }
@@ -785,8 +796,9 @@ function setQ(n,v,el){
   stats();
 }
 $('list').addEventListener('click',e=>{
-  const exc=e.target.closest('.card.ex');if(exc){const x=EX.find(z=>z.id===exc.dataset.ex);window._exPh=x;addItem(null,'');return}
-  const nc=e.target.closest('.card.newc');if(nc){window._exPh=null;addItem(null,'');return}
+  const il=e.target.closest('.card.inl');if(il){if(e.target.closest('.inl-ok'))inlSave();else if(e.target.closest('.inl-x')){INL=null;INLD={};render()}return}
+  const exc=e.target.closest('.card.ex');if(exc){INL=exc.dataset.ex;INLD={};render();const f=document.querySelector('.card.inl .inl-'+(e.target.closest('.spec')?'s':'n'));if(f)f.focus();return}
+  const nc=e.target.closest('.card.newc');if(nc){INL='new';INLD={};render();const f=document.querySelector('.card.inl .inl-n');if(f)f.focus();return}
   if(e.target.closest('#exOff')){S.exOff=true;save();render();return}
   const ph=e.target.closest('.pic[data-ph]');if(ph){photoSheet(ph.closest('.card').dataset.n);return}
   const b=e.target.closest('button');if(!b)return;
@@ -797,8 +809,12 @@ $('list').addEventListener('click',e=>{
   const inp=c.querySelector('input');const cur=Math.max(parseInt(inp.value)||0,0);
   const nv=Math.max(0,cur+(b.classList.contains('p')?1:-1));inp.value=nv||'';setQ(n,nv,c);
 });
-function commit(e){if(e.target.tagName==='INPUT'){const c=e.target.closest('.card');if(!c)return;const clean=e.target.value.replace(/[^0-9]/g,'');if(clean!==e.target.value)e.target.value=clean;setQ(c.dataset.n,clean,c)}}
+function commit(e){if(e.target.tagName==='INPUT'){const c=e.target.closest('.card');if(!c||c.classList.contains('inl'))return;const clean=e.target.value.replace(/[^0-9]/g,'');if(clean!==e.target.value)e.target.value=clean;setQ(c.dataset.n,clean,c)}}
 ['input','change','blur'].forEach(ev=>$('list').addEventListener(ev,commit,true));
+$('list').addEventListener('input',e=>{const c=e.target.closest('.card.inl');if(!c)return;const k={'inl-n':'num','inl-s':'spec','inl-g':'grp','inl-q':'q'}[e.target.className];if(k)INLD[k]=e.target.value});
+$('list').addEventListener('change',async e=>{if(!e.target.classList.contains('inl-f'))return;const f=e.target.files[0];if(!f)return;
+  try{const src=await shrink(f);quickEdit(src,out=>{INLD.img=out;close();render()},()=>{close();render()})}catch(err){toast('Foto nicht lesbar')}});
+$('list').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.closest('.card.inl')){e.preventDefault();inlSave()}});
 $('list').addEventListener('keydown',e=>{if(e.target.tagName==='INPUT'&&e.key==='Enter')e.target.blur()});
 $('list').addEventListener('focusin',e=>{if(e.target.tagName==='INPUT')setTimeout(()=>e.target.select(),30)});
 $('q').addEventListener('input',e=>{query=e.target.value.trim().toLowerCase();$('qx').style.display=query?'block':'none';render()});
@@ -1035,18 +1051,20 @@ function addItem(edit,preNum,draft){
   <label>Artikelnr. (optional)</label><input type="text" id="aN" inputmode="numeric" value="${esc(draft?(draft.numIn||''):((e.num&&!NONR(e.num)?e.num:'')||preNum||''))}" ${edit&&!NONR(edit.num)?'disabled style="background:#f3f5f8"':''} placeholder="${X?'z. B. '+esc(X.num):'z. B. 10123456'} – oder leer lassen">
   <label>Bezeichnung</label><input type="text" id="aS" value="${esc(e.spec||'')}" placeholder="${X?'z. B. '+esc(X.spec):'z. B. Drehgelenk Ø8 · M10x1k'}">
   <label>Zusatz (optional)</label><input type="text" id="aA" value="${esc(e.art||'')}" placeholder="${X?'z. B. '+esc(X.art):'z. B. Hersteller, Maß'}">
-  <label>Gruppe</label><select id="aG"><option value="${OWN}">${OWN} (am Ende)</option>${secs.map(s=>`<option ${e.sec===s?'selected':''}>${esc(s)}</option>`).join('')}</select>
+  <label>Gruppe</label><select id="aG"><option value="${OWN}">${secs.length?'Eigene Gruppe':'Gruppe'}</option>${secs.map(s=>`<option ${e.sec===s?'selected':''}>${esc(s)}</option>`).join('')}</select>
   <div id="aUw" style="display:none"><label>Untergruppe</label><select id="aU"></select></div>
+  <div id="aOw"><input type="text" id="aO" list="ogl" value="${esc((!e.sec||e.sec===OWN)?(e.grp||''):'')}" placeholder="Gruppe wählen oder neu eintippen – z. B. Schrauben (optional)">${grpList()}</div>
   <label>Foto</label><div class="photo2">${img?`<label class="pv pvtap" id="aPv"><img src="${img}"><span class="pved">✎</span></label>`:''}<label class="pbtn"><img src="${PICICO.kamera}" alt=""><span>Foto aufnehmen</span><input type="file" id="aC" accept="image/*" capture="environment" hidden></label><label class="pbtn"><img src="${PICICO.ordner}" alt=""><span>Foto auswählen</span><input type="file" id="aF" accept="image/*" hidden></label></div>
   <div class="btns"><button class="pri" id="aOk">Speichern</button>${edit?'<button class="red" id="aDel">Position löschen</button>':''}<button id="aNo">Abbrechen</button></div>`);
   const subs=sec=>{const g=[];BASE.forEach(x=>{if(x.sec===sec&&x.grp!==sec&&!g.includes(x.grp))g.push(x.grp)});return g};
   const fillU=(want,open)=>{const g=subs($('aG').value);$('aUw').style.display=g.length>1?'block':'none';
     $('aU').innerHTML=`<option value="">– bitte wählen –</option>`+g.map(x=>`<option ${x===want?'selected':''}>${esc(x)}</option>`).join('');
     if(g.length>1&&open)setTimeout(()=>{const u=$('aU');if(!u||u.offsetParent===null)return;try{u.showPicker?u.showPicker():u.focus()}catch(err){u.focus()}},120)};
-  fillU(e.grp,false);$('aG').onchange=()=>fillU(null,true);
+  const showO=()=>{$('aOw').style.display=$('aG').value===OWN?'block':'none'};
+  fillU(e.grp,false);showO();$('aG').onchange=()=>{fillU(null,true);showO()};
   const curU=()=>$('aUw').style.display==='none'?(subs($('aG').value)[0]||''):$('aU').value;
   const needU=()=>$('aUw').style.display!=='none'&&!$('aU').value;
-  const grab=()=>({numIn:$('aN').value,spec:$('aS').value,art:$('aA').value,sec:$('aG').value,grp:curU(),img,chg,edited});
+  const grab=()=>({numIn:$('aN').value,spec:$('aS').value,art:$('aA').value,sec:$('aG').value,grp:$('aG').value===OWN?$('aO').value.trim():curU(),img,chg,edited});
   const openEd=()=>{const d=grab();quickEdit(img,out=>addItem(edit,preNum,Object.assign(d,{img:out,chg:true,edited:true})),()=>addItem(edit,preNum,d))};
   $('aC').onchange=ev=>$('aF').onchange(ev);
   $('aF').onchange=async ev=>{const f=ev.target.files[0];if(!f)return;try{img=await shrink(f);chg=true;edited=false;openEd()}catch(err){toast('Foto nicht lesbar')}};
@@ -1061,7 +1079,7 @@ S.ts=Date.now();save();rebuild();render();close();toast('Gelöscht')}};
     if(!num){if(!spec&&!img){toast('Bitte Bezeichnung oder Foto angeben');return}num=oldNum&&NONR(oldNum)?oldNum:'~'+Date.now().toString(36)}
     if(num!==oldNum&&ITEMS.some(x=>x.num===num)){close();showCard(num);toast('Diese Nummer gibt es schon');return}
     if(!spec)spec='Ohne Bezeichnung';
-    const rec={num,spec,art:$('aA').value.trim(),sec:$('aG').value,grp:$('aG').value===OWN?'':curU(),img:!!img};
+    const rec={num,spec,art:$('aA').value.trim(),sec:$('aG').value,grp:$('aG').value===OWN?$('aO').value.trim():curU(),img:!!img};
     if(edit){S.custom=S.custom.map(x=>x.num===oldNum?rec:x);
       if(oldNum!==num){const nq=Object.assign({},S.q);if(nq[oldNum]!=null){nq[num]=nq[oldNum];delete nq[oldNum]}S.q=nq;if(S.last===oldNum)S.last=num;
         if(CIMG[oldNum]){CIMG[num]=CIMG[oldNum];delete CIMG[oldNum];saveImgs()}
@@ -1112,13 +1130,36 @@ const EXIMG={"bsp1": "data:image/webp;base64,UklGRmgwAABXRUJQVlA4WAoAAAAQAAAA7wA
 const EX=[{id:'x1',num:'123456',spec:'Musterteil 1 · Verteilerblock',art:'',img:EXIMG.bsp1,q:11},
  {id:'x2',num:'234567',spec:'Musterteil 2 · Rohrschelle',art:'',img:EXIMG.bsp2,q:22},
  {id:'x4',num:'345678',spec:'Musterteil 3 · Druckfeder',art:'',img:EXIMG.bsp4,q:33}];
+function ownGroups(){const g=[];S.custom.forEach(c=>{if((c.sec===OWN||!c.sec)&&c.grp&&!g.includes(c.grp))g.push(c.grp)});return g}
+function grpList(){return `<datalist id="ogl">${ownGroups().map(g=>`<option value="${esc(g)}">`).join('')}</datalist>`}
 function exLeft(){const u=S.exUsed||[];return (BASE.length||S.exOff||S.custom.length>=3)?[]:EX.filter(x=>!u.includes(x.id))}
 function exCard(x){return `<div class="card ex" data-ex="${x.id}"><span class="tag">MUSTER · Beispiel</span>
-  <div class="pic"><img src="${x.img}" alt=""><span class="chip">📷 Foto</span></div>
+  <div class="pic"><img src="${x.img}" alt=""><span class="chip">Musterfoto</span></div>
   <div class="info"><div class="num">${esc(x.num)}</div><div class="spec">${esc(x.spec)}</div><div class="hint">✎ antippen = eigenes Teil</div></div>
   <div class="qty"><button class="m" tabindex="-1">−</button><input type="text" value="${x.q}" readonly tabindex="-1" style="width:56px"><button class="p" tabindex="-1">+</button></div></div>`}
 function newCard(){return `<div class="card newc"><div class="pic"><img src="${EXIMG.kamera}" alt=""><span class="chip">📷 Foto</span></div>
   <div class="info"><div class="num">Artikelnr.</div><div class="spec">Bezeichnung eintragen</div><div class="hint">＋ hier antippen</div></div><div class="plus">＋</div></div>`}
+let INL=null,INLD={};
+function inlCard(x){const d=INLD,ph=x||{num:'Artikelnr.',spec:'Bezeichnung'};const pic=d.img||(x?x.img:PICICO.kamera);
+  return `<div class="card inl"><div class="ipic"><img src="${pic}" alt="" style="${d.img?'':'opacity:.45'}">
+    <div class="ib"><label title="Foto aufnehmen"><img src="${PICICO.kamera}" alt=""><input type="file" class="inl-f" accept="image/*" capture="environment" hidden></label><label title="Foto auswählen"><img src="${PICICO.ordner}" alt=""><input type="file" class="inl-f" accept="image/*" hidden></label></div>
+    <small>${d.img?'eigenes Foto ✓':'Foto: Kamera / Galerie'}</small></div>
+    <div class="ifl"><input class="inl-n" inputmode="numeric" placeholder="${x?'Ihre Nr. statt '+esc(ph.num):'Artikelnr. (optional)'}" value="${esc(d.num||'')}">
+    <input class="inl-s" placeholder="${x?'Ihre Bezeichnung':'Bezeichnung'}" value="${esc(d.spec||'')}">
+    <input class="inl-g" list="ogl" placeholder="Gruppe (optional)" value="${esc(d.grp||'')}">${grpList()}
+    <div class="irow"><input class="inl-q" inputmode="numeric" placeholder="Menge" value="${esc(d.q||'')}"><button class="inl-x" type="button">✕</button><button class="inl-ok" type="button">✓ Speichern</button></div></div></div>`}
+function inlSave(){const card=document.querySelector('.card.inl');if(!card)return;
+  const g=k=>card.querySelector('.inl-'+k).value.trim();const X=INL&&INL!=='new'?EX.find(z=>z.id===INL):null;
+  let num=g('n').replace(/\s+/g,''),spec=g('s'),grp=g('g'),q=parseInt(g('q'))||0,img=INLD.img||null;
+  if(!num&&!spec&&!img){toast('Bitte Nummer, Bezeichnung oder Foto eintragen');return}
+  if(!num)num='~'+Date.now().toString(36);
+  if(ITEMS.some(x=>x.num===num)){toast('Diese Nummer gibt es schon');return}
+  if(!FULL&&ITEMS.length>=LIM){demoInfo();return}
+  S.custom=S.custom.concat([{num,spec:spec||'Ohne Bezeichnung',art:'',sec:OWN,grp,img:!!img}]);
+  if(X)S.exUsed=(S.exUsed||[]).concat([X.id]);
+  if(img){CIMG[num]=img;saveImgs()}
+  if(q){const nq=Object.assign({},S.q);nq[num]=Math.min(999999,q);S.q=nq;S.last=num}
+  INL=null;INLD={};touched=true;S.ts=Date.now();save();rebuild();render();toast('Gespeichert ✓')}
 function starterTop(){return `<div class="st-top">
   <button data-act="firm"><span class="logo-slot${CAT.logo?'':' ph'}"><img src="${CAT.logo||EXIMG.logo}" alt=""></span><span>${CAT.firm?esc(CAT.firm):'<span style="color:#8a94a6">Muster GmbH</span>'}<small>Name &amp; Logo eintragen</small></span></button>
   <button data-act="load"><i>📥</i><span>Ganze Liste laden<small>aus Excel – alle Teile auf einmal</small></span></button></div>
