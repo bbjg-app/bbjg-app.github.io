@@ -72,6 +72,8 @@ h3.grp{font-family:var(--head);font-weight:600;font-size:15px;color:var(--mute);
 .b-x{background:#1d6f42;color:#fff} .b-p{background:#b3261e;color:#fff} .b-m{background:#e8edf3;color:var(--navy);max-width:70px!important;flex:0 0 64px!important}
 .bottom svg{width:20px;height:20px}
 /* sheet dialog */
+.shx{position:sticky;top:-6px;float:right;margin:-8px -6px 0 8px;width:40px;height:40px;border-radius:50%;border:0;background:#e8edf3;color:#1d2b3e;font-size:20px;line-height:40px;z-index:3;cursor:pointer}
+.veil{cursor:pointer;-webkit-tap-highlight-color:transparent}.sheet{cursor:auto}
 .veil{position:fixed;inset:0;background:rgba(10,20,35,.45);z-index:40;display:none;align-items:flex-end;justify-content:center}
 .veil.on{display:flex}
 .sheet{background:#fff;width:100%;max-width:520px;border-radius:18px 18px 0 0;padding:18px 18px calc(18px + env(safe-area-inset-bottom));max-height:90vh;overflow:auto}
@@ -786,7 +788,7 @@ function stats(){
   $('cDone').textContent=d; $('bar').style.width=(ITEMS.length?100*d/ITEMS.length:0)+'%';
   $('cSum').textContent=ITEMS.reduce((a,it)=>a+qOf(it.num),0);
   $('mDone').textContent=d;$('mAll').textContent=ITEMS.length;
-  $('golast').classList.toggle('on',d>0&&filter!=='open');
+  $('golast').classList.toggle('on',(d>0||!!S.last)&&filter!=='open');
 }
 function setQ(n,v,el){
   v=Math.max(0,Math.min(999999,parseInt(v)||0));
@@ -846,9 +848,9 @@ setTimeout(()=>{try{if(window.claude)return;const n=Object.keys(S.q||{}).length;
   sheet(`<h4>Sicherung speichern?</h4><p>Ihre ${n} gezählten Positionen sind nur auf diesem Gerät gespeichert. Eine Sicherung schützt sie, falls das Handy verloren geht oder kaputt ist.</p>
     <div class="btns"><button class="pri" id="bkA">💾 Jetzt sichern</button><button id="bkX">Später</button></div>`);$('bkA').onclick=bkSave;$('bkX').onclick=close}catch(e){}},2500);
 /* ---------- dialogs ---------- */
-function sheet(html){$('sheet').innerHTML=html;$('veil').classList.add('on')}
+function sheet(html){$('sheet').innerHTML='<button class="shx" type="button" aria-label="Schließen">✕</button>'+html;$('veil').classList.add('on');$('sheet').querySelector('.shx').onclick=close;$('sheet').scrollTop=0}
 function close(){$('veil').classList.remove('on')}
-$('veil').onclick=e=>{if(e.target===$('veil'))close()};
+$('veil').addEventListener('click',e=>{if(e.target===$('veil'))close()});
 function today(){const d=new Date();return d.toISOString().slice(0,10)}
 function fmtDate(s){if(!s)return '';const [y,m,d]=s.split('-');return `${d}.${m}.${y}`}
 $('bM').onclick=()=>{
@@ -1087,7 +1089,7 @@ S.ts=Date.now();save();rebuild();render();close();toast('Gelöscht')}};
         if(HIST[oldNum]){const h=Object.assign({},HIST);h[num]=h[oldNum];delete h[oldNum];HIST=h;histSave()}}}
     else{if(!FULL&&ITEMS.length>=LIM){close();demoInfo();return}S.custom=S.custom.concat([rec]);if(X){S.exUsed=(S.exUsed||[]).concat([X.id]);window._exPh=null}}
     if(img){CIMG[num]=img;saveImgs()}
-    S.ts=Date.now();save();rebuild();close();
+    S.last=num;S.ts=Date.now();save();rebuild();close();
     showCard(num);
     if(img&&chg&&!edited){setTimeout(()=>photoSheet(num),150);toast('Foto zurechtrücken und ✓ drücken')}else toast(edit?'Geändert':'Hinzugefügt – jetzt Menge eingeben');
   };
@@ -1158,7 +1160,7 @@ function inlSave(){const card=document.querySelector('.card.inl');if(!card)retur
   S.custom=S.custom.concat([{num,spec:spec||'Ohne Bezeichnung',art:'',sec:OWN,grp,img:!!img}]);
   if(X)S.exUsed=(S.exUsed||[]).concat([X.id]);
   if(img){CIMG[num]=img;saveImgs()}
-  if(q){const nq=Object.assign({},S.q);nq[num]=Math.min(999999,q);S.q=nq;S.last=num}
+  S.last=num;if(q){const nq=Object.assign({},S.q);nq[num]=Math.min(999999,q);S.q=nq}
   INL=null;INLD={};touched=true;S.ts=Date.now();save();rebuild();render();toast('Gespeichert ✓')}
 function starterTop(){return `<div class="st-top">
   <button data-act="firm"><span class="logo-slot${CAT.logo?'':' ph'}"><img src="${CAT.logo||EXIMG.logo}" alt=""></span><span>${CAT.firm?esc(CAT.firm):'<span style="color:#8a94a6">Muster GmbH</span>'}<small>Name &amp; Logo eintragen</small></span></button>
@@ -1341,7 +1343,7 @@ $('list').addEventListener('click',e=>{const c=e.target.closest('.card');if(c)la
 /* ---------- Knopf: zur letzten Eingabe ---------- */
 function goLast(){
   if(clearQ())render();
-  let c=S.last&&qOf(S.last)?cardOf(S.last):null;
+  let c=S.last?cardOf(S.last):null;
   if(!c){const all=[...document.querySelectorAll('.card.has')];c=all[all.length-1]}
   if(!c){toast('Noch nichts gezählt');return}
   lastNum=c.dataset.n;
@@ -1486,5 +1488,27 @@ function quickEdit(src,onOk,onBack){
 
 render();kbApplyInputs();
 </script>
+<div id="fs" aria-hidden="true"><div id="fsT"></div><div id="fsB"></div></div>
+<script>
+(()=>{const fs=document.getElementById('fs'),T=document.getElementById('fsT'),B=document.getElementById('fsB');let hide=null,drag=false;
+ const maxS=()=>document.documentElement.scrollHeight-innerHeight;
+ const top0=()=>{const t=document.getElementById('top');return t?t.getBoundingClientRect().bottom+8:90};
+ const bot0=()=>{const f=document.querySelector('nav.bottom');return f?innerHeight-f.getBoundingClientRect().top+8:90};
+ function place(){const m=maxS();if(m<innerHeight*3){fs.style.display='none';return}fs.style.display='block';
+   const a=top0(),b=innerHeight-bot0()-52;T.style.top=(a+(b-a)*Math.min(1,scrollY/m))+'px'}
+ function label(){let cur='';document.querySelectorAll('h2.sec').forEach(h=>{if(h.getBoundingClientRect().top<innerHeight/2)cur=h.textContent});B.textContent=cur;B.style.display=cur?'block':'none';B.style.top=T.style.top}
+ function show(){fs.classList.add('on');clearTimeout(hide);if(!drag)hide=setTimeout(()=>fs.classList.remove('on'),1500)}
+ addEventListener('scroll',()=>{if(document.getElementById('veil').classList.contains('on'))return;place();if(drag)label();show()},{passive:true});
+ addEventListener('resize',place);
+ T.addEventListener('pointerdown',e=>{e.preventDefault();drag=true;T.setPointerCapture(e.pointerId);fs.classList.add('drag');show();label()});
+ T.addEventListener('pointermove',e=>{if(!drag)return;const a=top0(),b=innerHeight-bot0()-52;const f=Math.max(0,Math.min(1,(e.clientY-26-a)/(b-a)));scrollTo(0,f*maxS());label()});
+ const up=()=>{if(!drag)return;drag=false;fs.classList.remove('drag');B.style.display='none';show()};
+ T.addEventListener('pointerup',up);T.addEventListener('pointercancel',up);
+})();
+</script>
+<style>#fs{display:none}#fsT{position:fixed;right:2px;width:30px;height:52px;border-radius:15px;background:#1d3557;opacity:0;transition:opacity .25s;z-index:30;touch-action:none;box-shadow:0 2px 8px rgba(0,0,0,.3);pointer-events:none}
+#fsT::before{content:'⇕';color:#fff;font-size:20px;display:block;text-align:center;line-height:52px}
+#fs.on #fsT{opacity:.85;pointer-events:auto}#fs.drag #fsT{opacity:1;background:#2f6fb3}
+#fsB{position:fixed;right:42px;max-width:65vw;padding:10px 14px;border-radius:12px;background:#1d3557;color:#fff;font-weight:700;font-size:16px;z-index:30;display:none;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}</style>
 </body>
 </html>
