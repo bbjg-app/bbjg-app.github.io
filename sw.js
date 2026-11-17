@@ -1,7 +1,3 @@
-/* Inventur – offline zuerst. Neue Versionen werden nur nach Zustimmung im App-Fenster aktiv. */
-const C='inv-v12';const F=['./','index.html','manifest.webmanifest','icon-192.png','icon-512.png','icon-180.png'];
-self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(F.map(u=>new Request(u,{cache:'reload'})))))});
-self.addEventListener('message',e=>{if(e.data==='upd')self.skipWaiting()});
-self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))).then(()=>self.clients.claim()))});
-self.addEventListener('fetch',e=>{const r=e.request;if(r.method!=='GET'||new URL(r.url).origin!==location.origin)return;
-  e.respondWith(caches.open(C).then(c=>c.match(r,{ignoreSearch:true}).then(m=>m||(r.mode==='navigate'?c.match('index.html'):null)).then(m=>m||fetch(r))))});
+/* Aufräumen: alter Service Worker der Startseite entfernt sich selbst. */
+self.addEventListener('install',()=>self.skipWaiting());
+self.addEventListener('activate',e=>{e.waitUntil(caches.delete('inv-v12').then(()=>self.registration.unregister()).then(()=>self.clients.matchAll({type:'window'})).then(cs=>cs.forEach(c=>c.navigate(c.url))))});
