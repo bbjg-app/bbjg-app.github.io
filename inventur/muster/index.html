@@ -1270,7 +1270,7 @@ function tourSteps(){const c=[...document.querySelectorAll('.card')].find(x=>x.g
  [()=>c&&c.querySelector('.qty'),'Hier zählen','Mit + und − die Menge ändern oder die Zahl antippen und eintippen. Gezählte Teile werden gelb.'],
  [()=>c&&c.querySelector('.ulbl'),'Einheit & Mindestbestand','Diese kleine Taste antippen: Stück, Rolle, Karton … · Mindestbestand · Lieferzeit. Wird es knapp, färbt sich die Zahl orange oder rot.'],
  [()=>$('q'),'Suchen','Artikelnummer oder Name eintippen – die Liste filtert sofort.'],
- [()=>$('jump'),'Gruppe','Springt direkt zu einer Gruppe, z. B. Verschraubungen.'],
+ [()=>$('jump'),'Gruppe','Springt direkt zu einer Gruppe, z. B. Schrauben.'],
  [()=>$('vw'),'Filter & Sortieren','Nur M6 oder R1/8 zeigen, nach Gewinde oder Status sortieren, eigene Reihenfolge.'],
  [()=>$('hq'),'Hilfe','Hier jederzeit diese Erklärung und die Liste aller Funktionen.']]}
 function tour(i){const T=tourSteps();const old=document.getElementById('tourL');if(old)old.remove();document.querySelectorAll('.tglow').forEach(x=>x.classList.remove('tglow'));
@@ -1492,7 +1492,7 @@ function addItem(edit,preNum,draft){
   const secs=sections.filter(s=>s!==OWN);
   sheet(`<h4>${edit?'Position bearbeiten':'Neue Position'}</h4><p>${edit?'Ändern oder löschen.':'Wird in die gewählte Gruppe einsortiert und erscheint in Excel und PDF.'}</p>
   <label>Artikelnr. (optional)</label><input type="text" id="aN" inputmode="numeric" value="${esc(draft?(draft.numIn||''):((e.num&&!NONR(e.num)?e.num:'')||preNum||''))}" ${edit&&!NONR(edit.num)?'disabled style="background:#f3f5f8"':''} placeholder="${X?'z. B. '+esc(X.num):'z. B. 10123456'} – oder leer lassen">
-  <label>Bezeichnung</label><input type="text" id="aS" value="${esc(e.spec||'')}" placeholder="${X?'z. B. '+esc(X.spec):'z. B. Drehgelenk Ø8 · M10x1k'}">
+  <label>Bezeichnung</label><input type="text" id="aS" value="${esc(e.spec||'')}" placeholder="${X?'z. B. '+esc(X.spec):'z. B. Sechskantschraube M8×20'}">
   <label>Zusatz (optional)</label><input type="text" id="aA" value="${esc(e.art||'')}" placeholder="${X?'z. B. '+esc(X.art):'z. B. Hersteller, Maß'}">
   <label>Gruppe</label><select id="aG"><option value="${OWN}">${secs.length?'Eigene Gruppe':'Gruppe'}</option>${secs.map(s=>`<option ${e.sec===s?'selected':''}>${esc(s)}</option>`).join('')}</select>
   <div id="aUw" style="display:none"><label>Untergruppe</label><select id="aU"></select></div>
@@ -1625,7 +1625,7 @@ async function importExcel(file){
   const buf=await file.arrayBuffer();const wb=XLSX.read(buf,{type:'array'});const ws=wb.Sheets[wb.SheetNames[0]];
   const rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:''});
   let hi=-1,map={};
-  for(let r=0;r<Math.min(rows.length,15)&&hi<0;r++){const m={};rows[r].forEach((c,ci)=>{const s=String(c).trim();for(const k in HEAD)if(m[k]==null&&HEAD[k].test(s))m[k]=ci});if(m.num!=null&&m.spec!=null){hi=r;map=m}}
+  for(let r=0;r<Math.min(rows.length,15)&&hi<0;r++){const m={};rows[r].forEach((c,ci)=>{const s=String(c).trim();for(const k in HEAD)if(m[k]==null&&HEAD[k].test(s)){m[k]=ci;break}});if(m.num!=null&&m.spec!=null){hi=r;map=m}}
   if(hi<0){hi=-1;map={num:0,spec:1,art:2,grp:3,sec:4}}
   const items=[],seen=new Set();let dup=0,skip=0;
   for(let r=hi+1;r<rows.length;r++){const row=rows[r];const num=normNum(row[map.num]);const spec=String(row[map.spec]??'').trim();
@@ -1653,9 +1653,9 @@ const ACT={
     $('iN').onclick=close;$('iY').onclick=()=>{CAT.items=res.items;const cut=res.items.length>limit();if(cut)res.items=res.items.slice(0,limit());afterCatChange(cut?('Basic: '+limit()+' Artikel geladen – für mehr: Plus oder Profi'):(res.items.length+' Artikel geladen'))}},
   tpl(){const H=v=>({v,t:'s',st:2}),T=v=>({v,t:'s'}),N=v=>({v,t:'n'});
     const rows=[[H('Artikelnr.'),H('Bezeichnung'),H('Zusatz'),H('Gruppe'),H('Abschnitt')],
-      [N(10001),T('Drehgelenk Ø6 M10x1'),T('Messing'),T('Drehgelenke'),T('Verschraubungen')],
-      [N(10002),T('Winkelverschraubung 6LL M8x1'),T(''),T('Winkel-Verschraubungen'),T('Verschraubungen')],
-      [N(20001),T('Schlauch NW4, 50 m'),T('fettgefüllt'),T('Schläuche'),T('Leitungen')]];
+      [N(10001),T('Sechskantschraube M8×20'),T('verzinkt'),T('Schrauben'),T('Befestigung')],
+      [N(10002),T('Sechskantmutter M8'),T(''),T('Muttern'),T('Befestigung')],
+      [N(20001),T('Kabel NYM 3×1,5 mm², 50 m'),T('Ring'),T('Kabel'),T('Elektro')]];
     const styles='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="2"><font><sz val="10"/><name val="Arial"/></font><font><b/><sz val="10"/><name val="Arial"/></font></fonts><fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFD9D9D9"/></patternFill></fill></fills><borders count="1"><border/></borders><cellStyleXfs count="1"><xf/></cellStyleXfs><cellXfs count="3"><xf fontId="0"/><xf fontId="1" applyFont="1"/><xf fontId="1" fillId="2" applyFont="1" applyFill="1"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>';
     const files=[['[Content_Types].xml','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>'],
       ['_rels/.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>'],
