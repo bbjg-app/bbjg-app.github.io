@@ -156,7 +156,7 @@ nav .mic,.nb .mic{width:34px;height:34px}.golast,.hgrab .hq{background:transpare
 .card .qw .ulbl{margin:0!important;white-space:nowrap;font-size:13.5px}.card .qw .cartb{margin:0!important;flex:0 0 auto;width:52px!important;height:52px!important;padding:2px!important}
 .card .qw .cartb .mic,.card .qw .cartb img{width:46px!important;height:46px!important}
 @media (min-width:700px){.card{flex-wrap:nowrap!important}.card .qw{flex:0 0 auto!important;margin-top:0}}
-#sheet .btns button.xonly{display:none!important}#trash .mic{width:56px;height:56px}</style>
+#sheet .btns button.xonly{display:none!important}#trash .mic{width:56px;height:56px}#trash,.dghost{display:none!important}.lp{outline:3px solid #c9a86a;outline-offset:2px;border-radius:14px}h2.sec,h3.grp,h4.sbg{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}.card{-webkit-touch-callout:none}</style>
 <style>
 :root{
   --navy:#1f3a5f; --navy2:#2e5c8a; --ink:#16212e; --mute:#6b7785; --line:#dfe5ec;
@@ -3746,7 +3746,7 @@ const A={
    {e:ic('name_datum'),t:'Name & Datum',f:()=>$('bM').onclick()},{e:ic('firma'),t:'Firma & Logo',f:()=>ACT.firm()},
    {e:ic('verbrauch'),t:'Verbrauch abziehen',f:proGate(vbPick)},{e:ic('journal'),t:'Verbrauch-Journal',f:proGate(vbJournal)},
    
-   {e:ic('papierkorb'),t:'Löschen …',sub:1,keep:1,f:()=>menuPop(($('topMehr')||$('nb-mehr')||document.body),'🗑 Löschen',[{e:ic('hilfe'),t:'Einzelnes Teil: Teil lange drücken → zur Tonne ziehen',f:()=>toast('Teil 1 Sekunde drücken, dann nach unten zur Tonne ziehen')},{e:'0️⃣',t:'Alle Mengen löschen',f:()=>{snap('Mengen löschen');S.q={};S.ts=Date.now();save();rebuild();render();undoBar('Alle Mengen gelöscht')}},{e:ic('papierkorb'),t:'Katalog löschen',f:()=>ACT.delCat()}])}],pk)}};
+   {e:ic('papierkorb'),t:'Löschen …',sub:1,keep:1,f:()=>menuPop(($('topMehr')||$('nb-mehr')||document.body),'🗑 Löschen',[{e:'0️⃣',t:'Alle Mengen löschen',f:()=>{snap('Mengen löschen');S.q={};S.ts=Date.now();save();rebuild();render();undoBar('Alle Mengen gelöscht')}},{e:ic('papierkorb'),t:'Katalog löschen',f:()=>ACT.delCat()}])}],pk)}};
 TXT.de.hilfe='Hilfe';
 /* Leiste bauen: Tippen = Aktion, hochziehen = Menü wächst aus der Taste */
 (function(){const nb=document.querySelector('nav.bottom');if(!nb)return;_bX=$('bX').onclick;_bP=$('bP').onclick;setTimeout(()=>{_bX=$('bX').onclick||_bX;_bP=$('bP').onclick||_bP},1500);
@@ -4241,5 +4241,49 @@ A.lieferung.menu=(b,pk)=>menuPop(b,'🚚 '+T_('lieferung'),[{e:ic('bestellliste'
 </script><script>if(window.A&&0){}try{A.lieferung.tap=proGate(()=>window.cartSheet());OUTS.bestell.f=proGate(()=>window.lfOut())}catch(e){console.error(e)}</script><script>/* 24.11: kein extra Schließen-Knopf, ✕ reicht */
 (function(){const W=new Set(['Schließen','Schliessen','Abbrechen','OK','Später']);const run=()=>{const sh=document.getElementById('sheet');if(!sh||!sh.querySelector('.shx'))return;
  sh.querySelectorAll('.btns button,button.full').forEach(b=>{const t=b.textContent.trim();if((t==='OK'||!b.classList.contains('pri'))&&W.has(t))b.classList.add('xonly')})};
- const sh=document.getElementById('sheet');if(sh)new MutationObserver(run).observe(sh,{childList:true});})();</script><script>try{const t=document.querySelector('#trash div');if(t)t.innerHTML=ic('papierkorb')}catch(e){}</script></body>
+ const sh=document.getElementById('sheet');if(sh)new MutationObserver(run).observe(sh,{childList:true});})();</script><script>try{const t=document.querySelector('#trash div');if(t)t.innerHTML=ic('papierkorb')}catch(e){}</script><script>/* ===== 24.11 Menü am Teil / an der Gruppe: lange drücken oder Rechtsklick (Dmitrij A+B). Papierkorb-Ziehen entfällt. ===== */
+(function(){
+const itOf=n=>ITEMS.find(x=>x.num===n),NW=()=>Date.now();const pcsF=n=>typeof pcs==='function'?pcs(n):qOf(n);
+async function delNums(ns,label){const set=new Set(ns);snap('Gelöscht: '+label);
+  const q=Object.assign({},S.q);ns.forEach(n=>delete q[n]);S.q=q;
+  if(S.cart){const c=Object.assign({},S.cart);ns.forEach(n=>delete c[n]);S.cart=c}
+  const hasCat=ns.some(n=>{const it=itOf(n);return it&&!it.custom});
+  S.custom=(S.custom||[]).filter(x=>!set.has(x.num));
+  if(hasCat){CAT.items=CAT.items.filter(x=>!set.has(x.num));S.ts=NW();save();await afterCatChange('')}else{S.ts=NW();save();rebuild();render()}
+  try{stats()}catch(e){}try{cartBadge()}catch(e){}undoBar('Gelöscht: '+label)}
+window.delNums=delNums;
+function pt(n){const c=document.querySelector('.card[data-n="'+CSS.escape(n)+'"]');return c&&c.querySelector('.pic')}
+function itemMenu(n,el){const it=itOf(n);if(!it)return;const L=[
+  {e:ic('auf_liste'),t:'Auf die Bestellliste',top:1,f:()=>cartAdd(n)},
+  ...(it.custom?[{e:ic('stift'),t:'Bearbeiten',f:()=>{const b=document.querySelector('.card[data-n="'+CSS.escape(n)+'"] .ed');b?b.click():toast('Nur eigene Teile')}}]:[]),
+  {e:ic('fotos'),t:'Foto',f:()=>{const p=pt(n);p&&p.click()}},
+  {e:ic('liste_voll'),t:'Gruppe ändern',f:()=>grpSheet(n)},
+  {e:ic('etikett'),t:'Merkmal',f:()=>mkSheet(n)},
+  ...(S.abg&&S.abg.d&&S.abg.d[n]?[{e:ic('vergleichen'),t:'Vergleich: Firma '+fq(S.abg.d[n].b)+' · ich '+fq(pcsF(n)),f:()=>{}}]:[]),
+  {e:ic('etiketten_a4'),t:'Etikett mit Code',f:()=>labelSheet(n)},
+  {e:ic('papierkorb'),t:'Löschen',f:()=>delNums([n],dnum(n)||it.spec||'')}];
+  menuPop(el,(dnum(n)||'')+' · '+String(it.spec||'').slice(0,28),L)}
+function grpOf(h){if(h.matches('h2.sec')){const sc=sections[+h.id.slice(1)];return {t:sc,f:x=>x.sec===sc}}
+  if(h.matches('h3.grp')){const [sc,g]=GK[+h.id.slice(1)].split('|');return {t:g,f:x=>x.sec===sc&&x.grp===g}}
+  if(h.matches('h4.sbg')){const [sc,g,u]=UK[+h.id.slice(1)].split('|');return {t:u,f:x=>x.sec===sc&&x.grp===g&&x.sub===u}}return null}
+function groupMenu(h){const G=grpOf(h);if(!G)return;const L0=ITEMS.filter(G.f),ns=L0.map(x=>x.num),first=L0[0];if(!first)return;
+  menuPop(h,'Gruppe „'+G.t+'“ · '+ns.length+' Teile',[
+   {e:ic('auf_liste'),t:'Ganze Gruppe auf die Bestellliste',top:1,f:()=>{const c=Object.assign({},S.cart||{});ns.forEach(n=>{if(!c[n])c[n]={q:1,u:'Stück',f:1}});S.cart=c;save();try{cartBadge()}catch(e){}render();toast(ns.length+' Teile auf der Bestellliste – Menge in der Bestellliste anpassen')}},
+   {e:ic('liste_voll'),t:'Umbenennen / verschieben',f:()=>{grpSheet(first.num);setTimeout(()=>{const a=$('gpA');if(a)a.checked=true},60)}},
+   {e:ic('etikett'),t:'Merkmal für ganze Gruppe',f:()=>{mkSheet(first.num);setTimeout(()=>{const a=$('mkG');if(a)a.checked=true},60)}},
+   {e:ic('etiketten_a4'),t:'Etiketten für ganze Gruppe',f:()=>labelsA4(L0)},
+   {e:ic('papierkorb'),t:'Ganze Gruppe löschen',f:()=>{if(confirm('Gruppe „'+G.t+'“ mit '+ns.length+' Teilen löschen?\n(↶ Zurück macht es rückgängig)'))delNums(ns,'Gruppe '+G.t)}}])}
+window.itemMenu=itemMenu;window.groupMenu=groupMenu;
+const SKIP='.qty,.qw button,input,.cartb,.ulbl,.ed,button';let T=null,sup=false;
+const tgt=e=>{if(e.target.closest(SKIP))return null;return e.target.closest('.card[data-n]')||e.target.closest('h2.sec,h3.grp,h4.sbg')};
+const open=el=>{if(el.matches('.card'))itemMenu(el.dataset.n,el);else groupMenu(el)};
+const L=$('list');
+L.addEventListener('pointerdown',e=>{const el=tgt(e);if(!el)return;e.stopPropagation();const x0=e.clientX,y0=e.clientY;clearTimeout(T);
+  T=setTimeout(()=>{T=null;sup=true;try{navigator.vibrate&&navigator.vibrate(25)}catch(_){}el.classList.add('lp');setTimeout(()=>el.classList.remove('lp'),300);open(el)},550);
+  const mv=ev=>{if(Math.hypot(ev.clientX-x0,ev.clientY-y0)>10)stop()};const stop=()=>{clearTimeout(T);T=null;removeEventListener('pointermove',mv);removeEventListener('pointerup',stop);removeEventListener('pointercancel',stop)};
+  addEventListener('pointermove',mv);addEventListener('pointerup',stop);addEventListener('pointercancel',stop)},true);
+L.addEventListener('click',e=>{if(sup){sup=false;e.stopPropagation();e.preventDefault()}},true);
+L.addEventListener('contextmenu',e=>{const el=tgt(e);if(!el)return;e.preventDefault();open(el)});
+})();
+</script></body>
 </html>
